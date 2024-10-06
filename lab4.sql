@@ -1,66 +1,78 @@
 -- Table: Rabotniki
 CREATE TABLE Rabotniki (
-    Seria_i_nomer_pasporta VARCHAR2(20) PRIMARY KEY,
-    FIO VARCHAR2(100),
-    Data_rojdenia DATE,
-    Mesto_propiski VARCHAR2(100),
-    Telefon CHAR(15),
-    INN VARCHAR2(20)
+    Seria_i_nomer_pasporta VARCHAR2(10),
+    FIO VARCHAR2(100) NOT NULL,
+    Data_rojdenia DATE NOT NULL,
+    Mesto_propiski VARCHAR2(100) NOT NULL,
+    Telefon CHAR(10) NOT NULL,
+    INN VARCHAR2(12) NOT NULL,
+    CONSTRAINT pk_rabotniki PRIMARY KEY (Seria_i_nomer_pasporta)
 );
 
 -- Table: Oborudovanie
 CREATE TABLE Oborudovanie (
-    Seriynyy_nomer CHAR(15) PRIMARY KEY,
-    Brend VARCHAR2(50),
-    Strana_proizvoditelya VARCHAR2(50),
-    Stoimost NUMBER,
-    Data_registracii DATE,
-    Naimenovanie_oborudovania VARCHAR2(100)
+    Seriynyy_nomer CHAR(25),
+    Brend VARCHAR2(50) NOT NULL,
+    Strana_proizvoditelya VARCHAR2(25) NOT NULL,
+    Stoimost NUMBER NOT NULL,
+    data_registracii DATE,
+    Naimenovanie_oborudovania VARCHAR2(100) NOT NULL,
+    CONSTRAINT pk_oborudovanie PRIMARY KEY (Seriynyy_nomer)
 );
 
 -- Table: Zapchasti
 CREATE TABLE Zapchasti (
-    Seriynyy_nomer CHAR(15) PRIMARY KEY,
-    Naimenovanie VARCHAR2(100),
-    Stoimost NUMBER,
-    Proizvoditel VARCHAR2(100),
-    Kolichestvo NUMBER
-);
-
--- Table: Avtomobil
-CREATE TABLE Avtomobil (
-    Nomer_avtomobilia VARCHAR2(20) PRIMARY KEY,
-    Probeg_km NUMBER,
-    Marka_avtomobilia VARCHAR2(50),
-    Proizvoditel VARCHAR2(100),
-    Data_vypuska DATE,
-    Vladelec_FIO CHAR(15) REFERENCES Klient(Telefon)
+    Seriynyy_nomer CHAR(25),
+    Naimenovanie VARCHAR2(100) NOT NULL,
+    Stoimost NUMBER NOT NULL,
+    Proizvoditel VARCHAR2(100) NOT NULL,
+    Kolichestvo NUMBER NOT NULL,
+    CONSTRAINT pk_zapchasti PRIMARY KEY (Seriynyy_nomer)
 );
 
 -- Table: Klient
 CREATE TABLE Klient (
-    Telefon CHAR(15) PRIMARY KEY,
-    FIO VARCHAR2(100),
+    Telefon CHAR(10),
+    FIO VARCHAR2(100) NOT NULL,
     Mesto_propiski VARCHAR2(100),
-    Nomer_scheta VARCHAR2(20),
-    Nomer_voditelskogo_udostoverenia CHAR(20),
-    email VARCHAR2(100)
+    Nomer_scheta VARCHAR2(25) NOT NULL,
+    Nomer_voditelskogo_udostoverenia CHAR(10) NOT NULL,
+    email VARCHAR2(100) NOT NULL,
+    CONSTRAINT pk_klient PRIMARY KEY (Telefon)
+);
+
+-- Table: Avtomobil
+CREATE TABLE Avtomobil (
+    Nomer_avtomobilia VARCHAR2(10),
+    Probeg_km NUMBER NOT NULL,
+    Marka_avtomobilia VARCHAR2(50) NOT NULL,
+    Proizvoditel VARCHAR2(100) NOT NULL,
+    data_vypuska DATE NOT NULL,
+    Vladelec_FIO CHAR(100) NOT NULL,
+    CONSTRAINT pk_avtomobil PRIMARY KEY (Nomer_avtomobilia),
+    CONSTRAINT fk_avto_vladelec FOREIGN KEY (Vladelec_FIO) REFERENCES Klient(FIO)
 );
 
 -- Table: Uslugi
 CREATE TABLE Uslugi (
-    Nomer_uslugi NUMBER PRIMARY KEY,
-    Naimenovanie_uslugi VARCHAR2(100),
-    Stoimost NUMBER,
-    Oborudovanie CHAR(15) REFERENCES Oborudovanie(Seriynyy_nomer),
-    Vremennie_ramki VARCHAR2(100) NULL,
-    Zapchasti CHAR(15) REFERENCES Zapchasti(Seriynyy_nomer)
+    Nomer_uslugi NUMBER,
+    Naimenovanie_uslugi VARCHAR2(100) NOT NULL,
+    Stoimost NUMBER NOT NULL,
+    Oborudovanie CHAR(25) NOT NULL,
+    Vremennie_ramki VARCHAR2(100),
+    Zapchasti CHAR(25) NOT NULL,
+    CONSTRAINT pk_uslugi PRIMARY KEY (Nomer_uslugi),
+    CONSTRAINT fk_uslugi_oborud FOREIGN KEY (Oborudovanie) REFERENCES Oborudovanie(Seriynyy_nomer),
+    CONSTRAINT fk_uslugi_zapchasti FOREIGN KEY (Zapchasti) REFERENCES Zapchasti(Seriynyy_nomer)
 );
 
 -- Table: Zakaz_klienta
 CREATE TABLE Zakaz_klienta (
-    Nomer_avtomobilia VARCHAR2(20) REFERENCES Avtomobil(Nomer_avtomobilia),
-    Nomer_uslugi NUMBER REFERENCES Uslugi(Nomer_uslugi),
-    Rabotnik VARCHAR2(20) REFERENCES Rabotniki(Seria_i_nomer_pasporta),
-    PRIMARY KEY (Nomer_avtomobilia, Nomer_uslugi, Rabotnik)
+    Nomer_avtomobilia VARCHAR2(10) NOT NULL,
+    Nomer_uslugi NUMBER NOT NULL,
+    Rabotnik VARCHAR2(10) NOT NULL,
+    CONSTRAINT pk_zakaz_klienta PRIMARY KEY (Nomer_avtomobilia, Nomer_uslugi, Rabotnik),
+    CONSTRAINT fk_zakaz_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia),
+    CONSTRAINT fk_zakaz_uslugi FOREIGN KEY (Nomer_uslugi) REFERENCES Uslugi(Nomer_uslugi),
+    CONSTRAINT fk_zakaz_rabotnik FOREIGN KEY (Rabotnik) REFERENCES Rabotniki(Seria_i_nomer_pasporta)
 );
