@@ -3,6 +3,16 @@
 
 2. Изменения типа данных одного из первичных ключей в любой таблице на ваше усмотрение. На этот первичный ключ должен ссылаться хотя бы один внешний ключ. При этом созданные таблицы нельзя удалять, только изменять.
 **/
+DROP TABLE Rabotniki CASCADE CONSTRAINTS;
+DROP TABLE Rabotniki;
+DROP TABLE Oborudovanie;
+DROP TABLE Uslugi;
+DROP TABLE Zakaz_Klienta;
+DROP TABLE Klient;
+DROP TABLE Zapchasti;
+DROP TABLE Avtomobil;
+DROP TABLE Guarantee_zap;
+
 CREATE TABLE Rabotniki (
     Seria_i_nomer_pasporta VARCHAR2(10),
     FIO VARCHAR2(100) NOT NULL,
@@ -48,9 +58,9 @@ CREATE TABLE Avtomobil (
     Marka_avtomobilia VARCHAR2(50) NOT NULL,
     Proizvoditel VARCHAR2(100) NOT NULL,
     data_vypuska DATE NOT NULL,
-    Vladelec_FIO CHAR(100) NOT NULL,
-    CONSTRAINT pk_avtomobil PRIMARY KEY (Nomer_avtomobilia),
-    CONSTRAINT fk_avto_vladelec FOREIGN KEY (Vladelec_FIO) REFERENCES Klient(FIO)
+    Vladelec_FIO VARCHAR2(100) NOT NULL,
+    CONSTRAINT pk_avtomobil PRIMARY KEY (Nomer_avtomobilia)
+    -- CONSTRAINT fk_avto_vladelec FOREIGN KEY (Vladelec_FIO) REFERENCES Klient(FIO)
 );
 
 CREATE TABLE Uslugi (
@@ -64,36 +74,28 @@ CREATE TABLE Uslugi (
     CONSTRAINT fk_uslugi_oborud FOREIGN KEY (Oborudovanie) REFERENCES Oborudovanie(Seriynyy_nomer),
     CONSTRAINT fk_uslugi_zapchasti FOREIGN KEY (Zapchasti) REFERENCES Zapchasti(Seriynyy_nomer)
 );
-
 CREATE TABLE Zakaz_klienta (
     Nomer_avtomobilia VARCHAR2(10) NOT NULL,
     Nomer_uslugi NUMBER NOT NULL,
     Rabotnik VARCHAR2(10) NOT NULL,
     CONSTRAINT pk_zakaz_klienta PRIMARY KEY (Nomer_avtomobilia, Nomer_uslugi, Rabotnik),
-    CONSTRAINT fk_zakaz_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia),
+    CONSTRAINT fk_zakaz_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia), -- ON UPDATE CASCADE
     CONSTRAINT fk_zakaz_uslugi FOREIGN KEY (Nomer_uslugi) REFERENCES Uslugi(Nomer_uslugi),
     CONSTRAINT fk_zakaz_rabotnik FOREIGN KEY (Rabotnik) REFERENCES Rabotniki(Seria_i_nomer_pasporta)
 );
-
-CREATE TABLE Strahovka (
-    id_strahovka NUMBER,
-    Nomer_avtomobilia CHAR(15) NOT NULL, -- Связана с автомобилем
-    Telefon_klienta CHAR(10) NOT NULL, -- Связана с клиентом
-    Data_nachala DATE NOT NULL,
-    Data_okonchaniya DATE NOT NULL,
-    CONSTRAINT pk_strahovka PRIMARY KEY (id_insurance),
-    CONSTRAINT fk_strahovka_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia),
-    CONSTRAINT fk_strahovka_klient FOREIGN KEY (Telefon_klienta) REFERENCES Klient(Telefon)
+----1111----
+CREATE TABLE Service_History (
+    Nomer_avtomobilia VARCHAR2(10) NOT NULL,
+    Nomer_uslugi NUMBER NOT NULL,
+    Data_servisa DATE NOT NULL,
+    Stoimost_servisa NUMBER NOT NULL,
+    Opisanie_servisa VARCHAR2(200) NOT NULL,
+    CONSTRAINT pk_service_history PRIMARY KEY (Nomer_avtomobilia, Nomer_uslugi, Data_servisa),
+    CONSTRAINT fk_service_history_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia),
+    CONSTRAINT fk_service_history_uslugi FOREIGN KEY (Nomer_uslugi) REFERENCES Uslugi(Nomer_uslugi)
 );
+----
 
--- Для таблицы Avtomobil
-ALTER TABLE Avtomobil
-MODIFY Nomer_avtomobilia VARCHAR2(12);
--- Для таблицы Zakaz_klienta
-ALTER TABLE Zakaz_klienta
-MODIFY Nomer_avtomobilia VARCHAR2(12);
+----2222----
 
--- Для новой таблицы Strahovka
-ALTER TABLE Strahovka
-MODIFY Nomer_avtomobilia VARCHAR2(12);
-
+----
