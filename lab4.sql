@@ -81,3 +81,26 @@ CREATE TABLE Zakaz_klienta (
     CONSTRAINT fk_zakaz_uslugi FOREIGN KEY (Nomer_uslugi) REFERENCES Uslugi(Nomer_uslugi),
     CONSTRAINT fk_zakaz_rabotnik FOREIGN KEY (Rabotnik) REFERENCES Rabotniki(Seria_i_nomer_pasporta)
 );
+
+CREATE TABLE Insurance (
+    id_insurance NUMBER,
+    Nomer_avtomobilia CHAR(15) NOT NULL, -- Связана с автомобилем
+    Telefon_klienta CHAR(10) NOT NULL, -- Связана с клиентом
+    Data_nachala DATE NOT NULL,
+    Data_okonchaniya DATE NOT NULL,
+    Stoimost NUMBER NOT NULL,
+    CONSTRAINT pk_insurance PRIMARY KEY (id_insurance),
+    CONSTRAINT fk_insurance_avtomobil FOREIGN KEY (Nomer_avtomobilia) REFERENCES Avtomobil(Nomer_avtomobilia),
+    CONSTRAINT fk_insurance_klient FOREIGN KEY (Telefon_klienta) REFERENCES Klient(Telefon)
+);
+
+ALTER TABLE Avtomobil
+MODIFY Nomer_avtomobilia CHAR(15);
+-- Для таблицы Zakaz_klienta
+ALTER TABLE Zakaz_klienta
+MODIFY Nomer_avtomobilia CHAR(15);
+
+-- Для новой таблицы Insurance (если она уже была создана)
+ALTER TABLE Insurance
+MODIFY Nomer_avtomobilia CHAR(15);
+
