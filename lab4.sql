@@ -88,12 +88,12 @@ CREATE TABLE Strahovka (
 
 -- Для таблицы Avtomobil
 ALTER TABLE Avtomobil
-MODIFY Nomer_avtomobilia VARCHAR2(10);
+MODIFY Nomer_avtomobilia VARCHAR2(12);
 -- Для таблицы Zakaz_klienta
 ALTER TABLE Zakaz_klienta
-MODIFY Nomer_avtomobilia VARCHAR2(10);
+MODIFY Nomer_avtomobilia VARCHAR2(12);
 
 -- Для новой таблицы Strahovka
 ALTER TABLE Strahovka
-MODIFY Nomer_avtomobilia VARCHAR2(15);
+MODIFY Nomer_avtomobilia VARCHAR2(12);
 
