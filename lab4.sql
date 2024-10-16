@@ -3,15 +3,15 @@
 
 2. Изменения типа данных одного из первичных ключей в любой таблице на ваше усмотрение. На этот первичный ключ должен ссылаться хотя бы один внешний ключ. При этом созданные таблицы нельзя удалять, только изменять.
 **/
+DROP TABLE Zakaz_klienta CASCADE CONSTRAINTS;
+DROP TABLE Service_History CASCADE CONSTRAINTS;
+DROP TABLE Uslugi CASCADE CONSTRAINTS;
+DROP TABLE Oborudovanie CASCADE CONSTRAINTS;
+DROP TABLE Zapchasti CASCADE CONSTRAINTS;
+DROP TABLE Avtomobil CASCADE CONSTRAINTS;
 DROP TABLE Rabotniki CASCADE CONSTRAINTS;
-DROP TABLE Rabotniki;
-DROP TABLE Oborudovanie;
-DROP TABLE Uslugi;
-DROP TABLE Zakaz_Klienta;
-DROP TABLE Klient;
-DROP TABLE Zapchasti;
-DROP TABLE Avtomobil;
-DROP TABLE Guarantee_zap;
+DROP TABLE Klient CASCADE CONSTRAINTS;
+
 
 CREATE TABLE Rabotniki (
     Seria_i_nomer_pasporta VARCHAR2(10),
@@ -97,5 +97,15 @@ CREATE TABLE Service_History (
 ----
 
 ----2222----
+ALTER TABLE Uslugi
+DROP CONSTRAINT fk_uslugi_oborud;
 
+ALTER TABLE Oborudovanie
+MODIFY Seriynyy_nomer VARCHAR2(30);
+
+ALTER TABLE Uslugi
+MODIFY Oborudovanie VARCHAR2(30);
+
+ALTER TABLE Uslugi
+ADD CONSTRAINT fk_uslugi_oborud FOREIGN KEY (Oborudovanie) REFERENCES Oborudovanie(Seriynyy_nomer);
 ----
