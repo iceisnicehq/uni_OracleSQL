@@ -5,48 +5,53 @@ DROP TABLE Departments;
 DROP TABLE Branch_offices;
 
 CREATE TABLE Staff (
-    Personal_access_code INT(10) PRIMARY KEY,
+    Personal_access_code INT(10),
     Full_name VARCHAR(255) NOT NULL,
     Date_of_birth DATE NOT NULL,
-    Position VARCHAR(255),
-    Phone_number CHAR(5),
-    Department INT(10),
+    Position VARCHAR(255) NOT NULL,
+    Phone_number CHAR(5) NOT NULL,
+    Department INT(10) NOT NULL,
+    CONSTRAINT pk_personal_access_code PRIMARY KEY (Personal_access_code),
     CONSTRAINT fk_department FOREIGN KEY (Department) REFERENCES Departments(Department_code)
 );
 
 CREATE TABLE Active_customer_transactions (
-    Transaction_number INT(10) PRIMARY KEY,
+    Transaction_number INT(10),
     Date_of_transaction DATE NOT NULL,
     Organisation INT(10) NOT NULL,
     Transaction_amount INT(10) NOT NULL,
-    Assignment_of_the_operation VARCHAR(255),
+    Assignment_of_the_operation VARCHAR(255) NOT NULL,
+    CONSTRAINT pk_transaction_number PRIMARY KEY (Transaction_number),
     CONSTRAINT fk_organisation FOREIGN KEY (Organisation) REFERENCES Clients(Client_code)
 );
 
 CREATE TABLE Branch_offices (
-    Branch_code INT(10) PRIMARY KEY,
-    Location VARCHAR(255),
-    Opening_hours VARCHAR(255),
-    List_of_services VARCHAR(255),
-    Phone_number CHAR(5)
+    Branch_code INT(10),
+    Location VARCHAR(255) NOT NULL,
+    Opening_hours VARCHAR(255) NOT NULL,
+    List_of_services VARCHAR(255) NOT NULL,
+    Phone_number CHAR(5) NOT NULL,
+    CONSTRAINT pk_branch_code PRIMARY KEY (Branch_code)
 );
 
 CREATE TABLE Departments (
-    Department_code INT(10) PRIMARY KEY,
-    Department_name VARCHAR(255),
-    Opening_hours VARCHAR(255),
-    Branch INT(10),
-    Equipment INT(10),
+    Department_code INT(10),
+    Department_name VARCHAR(255) NOT NULL,
+    Opening_hours VARCHAR(255) NOT NULL,
+    Branch INT(10) NOT NULL,
+    Equipment INT(10) NOT NULL,
+    CONSTRAINT pk_department_code PRIMARY KEY (Department_code),
     CONSTRAINT fk_branch FOREIGN KEY (Branch) REFERENCES Branch_offices(Branch_code)
 );
 
 CREATE TABLE Clients (
-    Client_code INT(10) PRIMARY KEY,
-    Full_name VARCHAR(255),
-    TIN INT(10),
-    Passport_information INT(10),
-    Personal_bank_account INT(10),
-    Personal_manager INT(10),
+    Client_code INT(10),
+    Full_name VARCHAR(255) NOT NULL,
+    TIN INT(10) NOT NULL,
+    Passport_information INT(10) NOT NULL,
+    Personal_bank_account INT(10) NOT NULL,
+    Personal_manager INT(10) NOT NULL,
+    CONSTRAINT pk_client_code PRIMARY KEY (Client_code),
     CONSTRAINT fk_personal_manager FOREIGN KEY (Personal_manager) REFERENCES Staff(Personal_access_code)
 );
 
