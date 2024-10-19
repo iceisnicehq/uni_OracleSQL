@@ -1,4 +1,5 @@
--- Drop the child table first, followed by its parent
+-- INT(10) to NUMBER(10)
+
 DROP TABLE Active_customer_transactions CASCADE CONSTRAINTS;
 DROP TABLE Clients CASCADE CONSTRAINTS;
 DROP TABLE Staff CASCADE CONSTRAINTS;
@@ -64,7 +65,7 @@ CREATE TABLE Active_customer_transactions (
 
 -- 1 Branch_offices
 INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_services, Phone_number) 
-VALUES (1, 'Москва, ул. Губкина, д. 65', '09:00-18:00', 'Консультации, Кредитование, Открытие счетов', '49512');
+VALUES (1, 'Алушта, ул. Губкина, д. 65', '09:00-18:00', 'Консультации, Кредитование, Открытие счетов', '49512');
 
 INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_services, Phone_number) 
 VALUES (2, 'Москва, ул. Льва Толстого, д. 16', '10:00-19:00', 'Консультации, Операции с валютой, Депозиты', '81267');
@@ -76,7 +77,7 @@ INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_servic
 VALUES (4, 'Москва, Ленинский пр., д. 65, к. 1', '09:30-18:30', 'Операции с валютой, Депозиты, Страхование', '34323');
 
 INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_services, Phone_number) 
-VALUES (5, 'Алушта, ул. Кремлевская, д. 1', '10:00-18:00', 'Консультации, Депозиты, Страхование', '84334');
+VALUES (5, 'Москва, ул. Бутлерова, д. 1', '10:00-18:00', 'Консультации, Депозиты, Страхование', '84334');
 
 
 -- Departments
