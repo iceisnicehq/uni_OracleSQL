@@ -5,7 +5,20 @@ DROP TABLE Clients CASCADE CONSTRAINTS;
 DROP TABLE Staff CASCADE CONSTRAINTS;
 DROP TABLE Departments CASCADE CONSTRAINTS;
 DROP TABLE Branch_offices CASCADE CONSTRAINTS;
+-- отличие ноль ограничение запятые  
 
+--CREATE TABLE Branch_offices (
+--    Branch_code NUMBER(10),
+--    Location int NOT NULL,
+--    Opening_hours VARCHAR2(255) NOT NULL,
+--    List_of_services VARCHAR2(255) NOT NULL,
+--    Phone_number CHAR(5) NOT NULL,
+--    CONSTRAINT pk_branch_code PRIMARY KEY (Branch_code)
+--);
+--
+--INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_services, Phone_number) 
+--VALUES (001, 001, '09:00-18:00', 'Консультации, Кредитование, Открытие счетов', '49512');
+--SELECT * FROM Branch_offices;
 
 -- 1. ни от чего
 CREATE TABLE Branch_offices (
@@ -51,19 +64,19 @@ CREATE TABLE Clients (
     CONSTRAINT pk_client_code PRIMARY KEY (Client_code),
     CONSTRAINT fk_personal_manager FOREIGN KEY (Personal_manager) REFERENCES Staff(Personal_access_code)
 );
-
 -- 5. от Клиента
 CREATE TABLE Active_customer_transactions (
     Transaction_number NUMBER(10),
     Date_of_transaction DATE NOT NULL,
     Organisation NUMBER(10) NOT NULL,
-    Transaction_amount NUMBER(10) NOT NULL,
+    Transaction_amount NUMBER(19,4) NOT NULL,
     Assignment_of_the_operation VARCHAR2(255) NOT NULL,
     CONSTRAINT pk_transaction_number PRIMARY KEY (Transaction_number),
     CONSTRAINT fk_organisation FOREIGN KEY (Organisation) REFERENCES Clients(Client_code)
 );
 
--- 1 Branch_offices
+-- 1 
+-- Branch_offices
 INSERT INTO Branch_offices (Branch_code, Location, Opening_hours, List_of_services, Phone_number) 
 VALUES (1, 'Алушта, ул. Губкина, д. 65', '09:00-18:00', 'Консультации, Кредитование, Открытие счетов', '49512');
 
@@ -97,7 +110,7 @@ INSERT INTO Departments (Department_code, Department_name, Opening_hours, Branch
 VALUES (5, 'Отдел страхования', '09:30-18:30', 4, 7);
 
 
--- Заполнение таблицы Staff (Сотрудники)
+--Staff
 INSERT INTO Staff (Personal_access_code, Full_name, Date_of_birth, Position, Phone_number, Department) 
 VALUES (1, 'Абдуллин Тагир Ренатович', TO_DATE('2004-07-04', 'YYYY-MM-DD'), 'Валютный кассир', '38344', 4);
 
@@ -121,7 +134,7 @@ VALUES (5, 'Сулимов Александр Дмитриевич', TO_DATE('20
 -- Добавление нового столбца Email к таблице Staff
 ALTER TABLE Staff ADD Email VARCHAR(255);
 
--- Заполнение нового столбца Email данными для существующих записей
+-- Email
 UPDATE Staff SET Email = 'tabd@gubkin.ru' WHERE Personal_access_code = 1;
 UPDATE Staff SET Email = 'kpol@gubkin.ru' WHERE Personal_access_code = 2;
 UPDATE Staff SET Email = 'dsab@gubkin.ru' WHERE Personal_access_code = 3;
@@ -132,14 +145,72 @@ UPDATE Staff SET Email = 'asul@gubkin.ru' WHERE Personal_access_code = 5;
 ALTER TABLE Branch_offices MODIFY Phone_number VARCHAR(10);
 
 -- 3. Изменение значения в одном из атрибутов для 2-х записей в любой таблице.
--- Изменение значения атрибута Position для двух сотрудников
+-- Position
 UPDATE Staff SET Position = 'Главный консультант' WHERE Personal_access_code = 3;
 UPDATE Staff SET Position = 'Заместитель главного консультанта' WHERE Personal_access_code = 5;
 
--- Изменение номера телефона для двух сотрудников
+-- Изменение номера телефона
 UPDATE Staff SET Phone_number = '77777' WHERE Personal_access_code = 3;
 UPDATE Staff SET Phone_number = '99999' WHERE Personal_access_code = 5;
 
 SELECT * FROM Branch_offices;
 SELECT * FROM Departments;
 SELECT * FROM Staff;
+SELECT * FROM Clients;
+SELECT * FROM Active_customer_transactions;
+-- вывести сотрудника его фамилия возраст в формате РФ колво клиентов и сумму их транзакций
+SELECT 
+    REGEXP_SUBSTR(s.Full_name, '\w*[ \s]', 1, 1, 'i') AS Фамилия, 
+    FLOOR(MONTHS_BETWEEN(SYSDATE, Date_of_birth)/12) Возраст,
+    COUNT(c.Client_code) AS Число_клиентов,
+    NVL(SUM(t.Transaction_amount), 0) AS Сумма_транзакций
+FROM Staff s
+LEFT JOIN Clients c ON s.Personal_access_code = c.Personal_manager
+LEFT JOIN Active_customer_transactions t ON c.Client_code = t.Organisation
+GROUP BY s.Full_name, s.Date_of_birth
+ORDER BY s.Full_name;
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (1, TO_DATE('2022-01-01', 'YYYY-MM-DD'), 1, 10000.0000, 'Оплата услуг');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (2, TO_DATE('2022-01-15', 'YYYY-MM-DD'), 2, 20000.0000, 'Покупка товара');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (3, TO_DATE('2022-02-01', 'YYYY-MM-DD'), 3, 30000.0000, 'Оплата услуг');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (4, TO_DATE('2022-03-01', 'YYYY-MM-DD'), 4, 40000.0000, 'Покупка товара');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (5, TO_DATE('2022-04-01', 'YYYY-MM-DD'), 5, 50000.0000, 'Оплата услуг');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (6, TO_DATE('2022-01-01', 'YYYY-MM-DD'), 1, 100010.0000, 'Оплата услуг');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (7, TO_DATE('2022-01-15', 'YYYY-MM-DD'), 2, 200020.0000, 'Покупка товара');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (8, TO_DATE('2022-02-01', 'YYYY-MM-DD'), 3, 300030.0000, 'Оплата услуг');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (9, TO_DATE('2022-03-01', 'YYYY-MM-DD'), 4, 400040.0000, 'Покупка товара');
+
+INSERT INTO Active_customer_transactions (Transaction_number, Date_of_transaction, Organisation, Transaction_amount, Assignment_of_the_operation) 
+VALUES (10, TO_DATE('2022-04-01', 'YYYY-MM-DD'), 5, 500050.0000, 'Оплата услуг');
+
+INSERT INTO Clients (Client_code, Full_name, TIN, Passport_information, Personal_bank_account, Personal_manager) 
+VALUES (1, 'Иванов Иван Иванович', 1234567890, 9876543210, 1111111111, 1);
+
+INSERT INTO Clients (Client_code, Full_name, TIN, Passport_information, Personal_bank_account, Personal_manager) 
+VALUES (2, 'Петров Петр Петрович', 2345678901, 8765432109, 2222222222, 2);
+
+INSERT INTO Clients (Client_code, Full_name, TIN, Passport_information, Personal_bank_account, Personal_manager) 
+VALUES (3, 'Сидоров Сергей Сергеевич', 3456789012, 7654321098, 3333333333, 3);
+
+INSERT INTO Clients (Client_code, Full_name, TIN, Passport_information, Personal_bank_account, Personal_manager) 
+VALUES (4, 'Кузнецов Константин Константинович', 4567890123, 6543210987, 4444444444, 4);
+
+INSERT INTO Clients (Client_code, Full_name, TIN, Passport_information, Personal_bank_account, Personal_manager) 
+VALUES (5, 'Николаев Николай Николаевич', 5678901234, 5432109876, 5555555555, 5);
