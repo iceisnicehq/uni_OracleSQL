@@ -2,9 +2,9 @@
 CREATE USER Sabirov_DS
 IDENTIFIED BY asm123;
 
-GRANT CONNECT, RESOURCE TO Sabirov_DS;
+GRANT CREATE SESSION, CREATE TABLE TO Sabirov_DS;
 
-GRANT SELECT ON sh.test_operation, sh.test_uchast TO Sabirov_DS;
+GRANT SELECT, UPDATE, DELETE ON sh.test_operation, sh.test_uchast TO Sabirov_DS;
 
 -- user
 CREATE TABLE sh.operations AS 
@@ -13,6 +13,66 @@ CREATE TABLE sh.operations AS
     JOIN sh.test_uchast u ON u.inn = ops.inn_pol
     WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
     AND NOT REGEXP_LIKE(ops.bic_pol, '^0445')
+    
+-------
+WITH bic_pol_only AS (
+    SELECT DISTINCT ops.bic_pol 
+    FROM sh.test_operation ops
+    JOIN sh.test_uchast u ON u.inn = ops.inn_pol
+    WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
+      AND NOT REGEXP_LIKE(ops.bic_pol, '^0445')
+)
+SELECT op.bic_pol AS бик_пол, COUNT(*) AS число_операций
+FROM sh.test_operation op
+WHERE op.bic_pol IN (SELECT bic_pol FROM bic_pol_only)
+   OR op.bic_pl  IN (SELECT bic_pol FROM bic_pol_only)
+GROUP BY op.bic_pol
+HAVING op.bic_pol NOT LIKE '0445%';
+--------
+-- количество операций у каждого получателя 
+-- бик + число операций
+SELECT op.bic_pol as бик_пол, COUNT(*) AS число_операций(пол+пл)
+    FROM sh.test_operation op
+    WHERE op.bic_pol IN (
+    SELECT DISTINCT ops.bic_pol AS БИК_получателя
+    FROM sh.test_operation ops
+    JOIN sh.test_uchast u ON u.inn = ops.inn_pol
+    WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
+        AND NOT REGEXP_LIKE(ops.bic_pol, '^0445')
+    )
+    GROUP BY op.bic_pol;
+    
+SELECT 
+    op.bic_pol AS бик_пол, 
+    COUNT(*) AS число_операций
+FROM 
+    sh.test_operation op
+WHERE 
+    op.bic_pol IN (
+        SELECT DISTINCT ops.bic_pol 
+        FROM sh.test_operation ops
+        JOIN sh.test_uchast u ON u.inn = ops.inn_pol
+        WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
+          AND NOT REGEXP_LIKE(ops.bic_pol, '^0445')
+    )
+    OR op.bic_pl IN (
+        SELECT DISTINCT ops.bic_pol 
+        FROM sh.test_operation ops
+        JOIN sh.test_uchast u ON u.inn = ops.inn_pol
+        WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
+          AND NOT REGEXP_LIKE(ops.bic_pol, '^0445')
+    )
+GROUP BY 
+    op.bic_pol;
+-- вот у нас есть получатели
+-- есть плательщики
+-- посчитать число 
+SELECT ops.bic_pl AS БИК_плательщика, COUNT(*) AS число_операций
+FROM sh.test_operation ops
+JOIN sh.test_uchast u ON u.inn = ops.inn_pl
+WHERE REGEXP_LIKE(lower(u.naimen), '[з3][аa][oо]|^[з3][аa][кk][рp]ы[тt][оo][eе][ ]?[aа][kк]ци[oо][hн][eе][pр][hн][oо][eе][ ]?[oо]бщ[eе]щ[еe][cс][tт][вb][oо]')
+    AND NOT REGEXP_LIKE(ops.bic_pl, '^0445')
+GROUP BY ops.bic_pl;
 
 UPDATE sh.operations
 SET summa_dog = 2500000
