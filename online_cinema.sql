@@ -56,32 +56,6 @@ CREATE TABLE People (
     birth_date DATE NOT NULL,
     CONSTRAINT pk_people PRIMARY KEY (person_id)
 );
-
--- 5. Payments
-CREATE TABLE Payments (
-    payment_id NUMBER NOT NULL,
-    date DATE NOT NULL,
-    amount NUMBER NOT NULL,
-    method VARCHAR2(100) NOT NULL,
-    user_id NUMBER NOT NULL,
-    subs_id NUMBER NOT NULL,
-    status VARCHAR2(15) NOT NULL,
-    CONSTRAINT pk_payments PRIMARY KEY (payment_id),
-    CONSTRAINT fk_payments_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
-    CONSTRAINT fk_payments_subscription FOREIGN KEY (subs_id) REFERENCES Subscriptions(subscription_id)
-);
-
--- 6. User_Subscriptions
-CREATE TABLE User_Subscriptions (
-    user_subscription_id NUMBER NOT NULL,
-    payment_id NUMBER NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    status VARCHAR2(50) NOT NULL,
-    CONSTRAINT pk_user_subscriptions PRIMARY KEY (user_subscription_id),
-    CONSTRAINT fk_user_subscriptions_payment FOREIGN KEY (payment_id) REFERENCES Payments(payment_id)
-);
-
 -- 7. Users
 CREATE TABLE Users (
     user_id NUMBER NOT NULL,
@@ -98,11 +72,37 @@ CREATE TABLE Users (
     vk_link VARCHAR2(100),
     interests VARCHAR2(255),
     sex VARCHAR2(1),
-    user_subscription_id NUMBER,
     ref_user_id NUMBER,
     CONSTRAINT pk_users PRIMARY KEY (user_id),
-    CONSTRAINT fk_users_subsctiption FOREIGN KEY (user_subscription_id) REFERENCES User_Subscriptions(user_subscription_id),
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id)
+);
+-- 5. Payments
+CREATE TABLE Payments (
+    payment_id NUMBER NOT NULL,
+    pay_date DATE NOT NULL,
+    amount NUMBER NOT NULL,
+    method VARCHAR2(100) NOT NULL,
+    user_id NUMBER NOT NULL,
+    subs_id NUMBER NOT NULL,
+    status VARCHAR2(15) NOT NULL,
+    CONSTRAINT pk_payments PRIMARY KEY (payment_id),
+    CONSTRAINT fk_payments_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    CONSTRAINT fk_payments_subscription FOREIGN KEY (subs_id) REFERENCES Subscriptions(subscription_id)
+);
+
+-- 6. User_Subscriptions
+CREATE TABLE User_Subscriptions (
+    user_subscription_id NUMBER NOT NULL,
+    user_id NUMBER NOT NULL, -- Foreign key to Users
+    subs_id NUMBER NOT NULL, -- Foreign key to Subscriptions
+    payment_id NUMBER NOT NULL, -- Foreign key to Payments
+    start_date DATE NOT NULL, -- When the subscription starts
+    end_date DATE NOT NULL, -- When the subscription ends
+    status VARCHAR2(50) NOT NULL, -- Subscription status (e.g., "Active", "Expired")
+    CONSTRAINT pk_user_subscriptions PRIMARY KEY (user_subscription_id),
+    CONSTRAINT fk_user_subscriptions_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    CONSTRAINT fk_user_subscriptions_subscription FOREIGN KEY (subs_id) REFERENCES Subscriptions(subscription_id),
+    CONSTRAINT fk_user_subscriptions_payment FOREIGN KEY (payment_id) REFERENCES Payments(payment_id)
 );
 
 -- 8. Ratings
@@ -110,7 +110,7 @@ CREATE TABLE Ratings (
     rating_id NUMBER NOT NULL,
     user_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
-    date DATE NOT NULL,
+    rate_date DATE NOT NULL,
     rating NUMBER(2,0) NOT NULL,
     comment VARCHAR2(512),
     CONSTRAINT pk_ratings PRIMARY KEY (rating_id),
