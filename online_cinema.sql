@@ -54,8 +54,17 @@ CREATE TABLE People (
     height NUMBER,
     birth_place VARCHAR2(512),
     birth_date DATE NOT NULL,
-    content_count NUMBER NOT NULL,
     CONSTRAINT pk_people PRIMARY KEY (person_id)
+);
+
+CREATE TABLE User_Subscriptions (
+    user_subscription_id NUMBER NOT NULL,
+    payment_id NUMBER NOT NULL, -- Foreign key to Payments
+    start_date DATE NOT NULL, -- When the subscription starts
+    end_date DATE NOT NULL, -- When the subscription ends
+    status VARCHAR2(50) NOT NULL, -- Subscription status (e.g., "Active", "Expired")
+    CONSTRAINT pk_user_subscriptions PRIMARY KEY (user_subscription_id),
+    CONSTRAINT fk_user_subscriptions_payment FOREIGN KEY (payment_id) REFERENCES Payments(payment_id)
 );
 
 -- 5. Users
@@ -74,11 +83,11 @@ CREATE TABLE Users (
     vk_link VARCHAR2(100),
     interests VARCHAR2(255),
     sex VARCHAR2(1),
-    payment_id NUMBER,
+    user_subscription_id NUMBER,
     subs_status VARCHAR2(50) NOT NULL,
     ref_user_id NUMBER,
     CONSTRAINT pk_users PRIMARY KEY (user_id),
-    CONSTRAINT fk_users_payment FOREIGN KEY (payment_id) REFERENCES Payments(payment_id),
+    CONSTRAINT fk_users_subsctiption FOREIGN KEY (user_subscription_id) REFERENCES User_Subscriptions(user_subscription_id),
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id)
 );
 
@@ -115,7 +124,7 @@ CREATE TABLE Subscription_Access (
     subscription_id NUMBER NOT NULL,
     CONSTRAINT fk_access_content FOREIGN KEY (content_id) REFERENCES Content(content_id),
     CONSTRAINT fk_access_subscription FOREIGN KEY (subscription_id) REFERENCES Subscriptions(subscription_id),
-    CONSTRAINT pk_subscription_access PRIMARY KEY (content_id, subscription_id)
+    -- CONSTRAINT pk_subscription_access PRIMARY KEY (content_id, subscription_id)
 );
 
 -- 9. Watch History
@@ -125,7 +134,7 @@ CREATE TABLE Watch_History (
     watched_time NUMBER,
     CONSTRAINT fk_watch_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
     CONSTRAINT fk_watch_content FOREIGN KEY (content_id) REFERENCES Content(content_id),
-    CONSTRAINT pk_watch_history PRIMARY KEY (user_id, content_id)
+    -- CONSTRAINT pk_watch_history PRIMARY KEY (user_id, content_id)
 );
 
 -- 10. Favorite
@@ -136,7 +145,7 @@ CREATE TABLE Favorite (
     CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
     CONSTRAINT fk_favorite_person FOREIGN KEY (person_id) REFERENCES People(person_id),
     CONSTRAINT fk_favorite_content FOREIGN KEY (content_id) REFERENCES Content(content_id),
-    CONSTRAINT pk_favorite PRIMARY KEY (user_id, person_id, content_id)
+    -- CONSTRAINT pk_favorite PRIMARY KEY (user_id, person_id, content_id)
 );
 
 -- 11. Content Genre
@@ -145,7 +154,7 @@ CREATE TABLE Content_Genre (
     content_id NUMBER NOT NULL,
     CONSTRAINT fk_content_genre FOREIGN KEY (genre_id) REFERENCES Genres(genre_id),
     CONSTRAINT fk_genre_content FOREIGN KEY (content_id) REFERENCES Content(content_id),
-    CONSTRAINT pk_content_genre PRIMARY KEY (genre_id, content_id)
+    -- CONSTRAINT pk_content_genre PRIMARY KEY (genre_id, content_id)
 );
 
 -- 12. Crew
@@ -155,5 +164,5 @@ CREATE TABLE Crew (
     role VARCHAR2(50) NOT NULL,
     CONSTRAINT fk_crew_person FOREIGN KEY (person_id) REFERENCES People(person_id),
     CONSTRAINT fk_crew_content FOREIGN KEY (content_id) REFERENCES Content(content_id),
-    CONSTRAINT pk_crew PRIMARY KEY (person_id, content_id)
+    -- CONSTRAINT pk_crew PRIMARY KEY (person_id, content_id)
 );
