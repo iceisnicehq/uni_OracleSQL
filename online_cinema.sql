@@ -1,4 +1,64 @@
--- Table: Users
+-- -- Drop dependent tables first
+-- DROP TABLE Crew CASCADE CONSTRAINTS;
+-- DROP TABLE Content_Genre CASCADE CONSTRAINTS;
+-- DROP TABLE Favorite CASCADE CONSTRAINTS;
+-- DROP TABLE Watch_History CASCADE CONSTRAINTS;
+-- DROP TABLE Subscription_Access CASCADE CONSTRAINTS;
+
+-- -- Drop primary tables
+-- DROP TABLE Ratings CASCADE CONSTRAINTS;
+-- DROP TABLE Payments CASCADE CONSTRAINTS;
+-- DROP TABLE Genres CASCADE CONSTRAINTS;
+-- DROP TABLE Subscriptions CASCADE CONSTRAINTS;
+-- DROP TABLE People CASCADE CONSTRAINTS;
+-- DROP TABLE Content CASCADE CONSTRAINTS;
+-- DROP TABLE Users CASCADE CONSTRAINTS;
+
+
+-- 1. Subscriptions
+CREATE TABLE Subscriptions (
+    subscription_id NUMBER NOT NULL,
+    subs_name VARCHAR2(100) NOT NULL,
+    subs_type VARCHAR2(100) NOT NULL,
+    subs_price NUMBER(6,2) NOT NULL,
+    CONSTRAINT pk_subscriptions PRIMARY KEY (subscription_id)
+);
+
+-- 2. Content
+CREATE TABLE Content (
+    content_id NUMBER NOT NULL,
+    title VARCHAR2(255) NOT NULL,
+    synopsis VARCHAR2(512),
+    release_date DATE NOT NULL,
+    country VARCHAR2(100) NOT NULL,
+    type VARCHAR2(100) NOT NULL,
+    age_rating VARCHAR2(3) NOT NULL,
+    language VARCHAR2(50) NOT NULL,
+    subtitles VARCHAR2(50) NOT NULL,
+    CONSTRAINT pk_content PRIMARY KEY (content_id)
+);
+
+-- 3. Genres
+CREATE TABLE Genres (
+    genre_id NUMBER NOT NULL,
+    name VARCHAR2(100) NOT NULL,
+    description VARCHAR2(512) NOT NULL,
+    CONSTRAINT pk_genres PRIMARY KEY (genre_id)
+);
+
+-- 4. People
+CREATE TABLE People (
+    person_id NUMBER NOT NULL,
+    first_name VARCHAR2(255) NOT NULL,
+    last_name VARCHAR2(255) NOT NULL,
+    height NUMBER,
+    birth_place VARCHAR2(512),
+    birth_date DATE NOT NULL,
+    content_count NUMBER NOT NULL,
+    CONSTRAINT pk_people PRIMARY KEY (person_id)
+);
+
+-- 5. Users
 CREATE TABLE Users (
     user_id NUMBER NOT NULL,
     username VARCHAR2(100) NOT NULL,
@@ -22,16 +82,7 @@ CREATE TABLE Users (
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id)
 );
 
--- Table: Subscriptions
-CREATE TABLE Subscriptions (
-    subscription_id NUMBER NOT NULL,
-    subs_name VARCHAR2(100) NOT NULL,
-    subs_type VARCHAR2(100) NOT NULL,
-    subs_price NUMBER(6,2) NOT NULL,
-    CONSTRAINT pk_subscriptions PRIMARY KEY (subscription_id)
-);
-
--- Table: Payments
+-- 6. Payments
 CREATE TABLE Payments (
     payment_id NUMBER NOT NULL,
     date DATE NOT NULL,
@@ -45,7 +96,7 @@ CREATE TABLE Payments (
     CONSTRAINT fk_payments_subscription FOREIGN KEY (subs_id) REFERENCES Subscriptions(subscription_id)
 );
 
--- Table: Ratings
+-- 7. Ratings
 CREATE TABLE Ratings (
     rating_id NUMBER NOT NULL,
     user_id NUMBER NOT NULL,
@@ -58,21 +109,7 @@ CREATE TABLE Ratings (
     CONSTRAINT fk_ratings_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
 );
 
--- Table: Content
-CREATE TABLE Content (
-    content_id NUMBER NOT NULL,
-    title VARCHAR2(255) NOT NULL,
-    synopsis VARCHAR2(512),
-    release_date DATE NOT NULL,
-    country VARCHAR2(100) NOT NULL,
-    type VARCHAR2(100) NOT NULL,
-    age_rating VARCHAR2(3) NOT NULL,
-    language VARCHAR2(50) NOT NULL,
-    subtitles VARCHAR2(50) NOT NULL,
-    CONSTRAINT pk_content PRIMARY KEY (content_id)
-);
-
--- Table: Subscription_Access
+-- 8. Subscription Access
 CREATE TABLE Subscription_Access (
     content_id NUMBER NOT NULL,
     subscription_id NUMBER NOT NULL,
@@ -81,7 +118,7 @@ CREATE TABLE Subscription_Access (
     CONSTRAINT pk_subscription_access PRIMARY KEY (content_id, subscription_id)
 );
 
--- Table: Watch_History
+-- 9. Watch History
 CREATE TABLE Watch_History (
     user_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
@@ -91,7 +128,7 @@ CREATE TABLE Watch_History (
     CONSTRAINT pk_watch_history PRIMARY KEY (user_id, content_id)
 );
 
--- Table: Favorite
+-- 10. Favorite
 CREATE TABLE Favorite (
     user_id NUMBER NOT NULL,
     person_id NUMBER,
@@ -102,15 +139,7 @@ CREATE TABLE Favorite (
     CONSTRAINT pk_favorite PRIMARY KEY (user_id, person_id, content_id)
 );
 
--- Table: Genres
-CREATE TABLE Genres (
-    genre_id NUMBER NOT NULL,
-    name VARCHAR2(100) NOT NULL,
-    description VARCHAR2(512) NOT NULL,
-    CONSTRAINT pk_genres PRIMARY KEY (genre_id)
-);
-
--- Table: Content_Genre
+-- 11. Content Genre
 CREATE TABLE Content_Genre (
     genre_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
@@ -119,19 +148,7 @@ CREATE TABLE Content_Genre (
     CONSTRAINT pk_content_genre PRIMARY KEY (genre_id, content_id)
 );
 
--- Table: People
-CREATE TABLE People (
-    person_id NUMBER NOT NULL,
-    first_name VARCHAR2(255) NOT NULL,
-    last_name VARCHAR2(255) NOT NULL,
-    height NUMBER,
-    birth_place VARCHAR2(512),
-    birth_date DATE NOT NULL,
-    content_count NUMBER NOT NULL,
-    CONSTRAINT pk_people PRIMARY KEY (person_id)
-);
-
--- Table: Crew
+-- 12. Crew
 CREATE TABLE Crew (
     person_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
