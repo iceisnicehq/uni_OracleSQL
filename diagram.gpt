@@ -1,0 +1,136 @@
+# diagram gpt 
+https://app.eraser.io/workspace/djQZdocu0B0hRnvEZE2P
+___________________________________________________________
+
+title Media Subscription Platform ERD
+
+// define tables
+Subscriptions [icon: credit-card, color: lightblue] {
+    subscription_id number pk
+    subs_name string
+    subs_type string
+    subs_price number
+}
+
+Content [icon: film, color: orange] {
+    content_id number pk
+    title string
+    synopsis string
+    release_date date
+    country string
+    type string
+    age_rating string
+    language string
+    subtitles string
+}
+
+Genres [icon: tag, color: green] {
+    genre_id number pk
+    name string
+    description string
+}
+
+People [icon: user, color: purple] {
+    person_id number pk
+    first_name string
+    last_name string
+    height number
+    birth_place string
+    birth_date date
+}
+
+Users [icon: user-check, color: yellow] {
+    user_id number pk
+    username string
+    password string
+    first_name string
+    last_name string
+    email string
+    phone string
+    reg_date date
+    birth_date date
+    bio string
+    location string
+    vk_link string
+    interests string
+    sex string
+    ref_user_id number fk
+}
+
+Payments [icon: dollar-sign, color: red] {
+    payment_id number pk
+    pay_date date
+    amount number
+    method string
+    user_id number fk
+    subs_id number fk
+    status string
+}
+
+User_Subscriptions [icon: calendar, color: blue] {
+    user_subscription_id number pk
+    user_id number fk
+    subs_id number fk
+    payment_id number fk
+    start_date date
+    end_date date
+    status string
+}
+
+Ratings [icon: star, color: gold] {
+    rating_id number pk
+    user_id number fk
+    content_id number fk
+    rate_date date
+    rating number
+    comment string
+}
+
+Subscription_Access [icon: lock, color: grey] {
+    content_id number fk
+    subscription_id number fk
+}
+
+Watch_History [icon: clock, color: brown] {
+    user_id number fk
+    content_id number fk
+    watched_time number
+}
+
+Favorite [icon: heart, color: pink] {
+    user_id number fk
+    person_id number fk
+    content_id number fk
+}
+
+Content_Genre [icon: layers, color: teal] {
+    genre_id number fk
+    content_id number fk
+}
+
+Crew [icon: users, color: navy] {
+    person_id number fk
+    content_id number fk
+    role string
+}
+
+// define relationships
+Users.ref_user_id - Users.user_id
+Users.user_id < Payments.user_id 
+Subscriptions.subscription_id < Payments.subs_id
+Users.user_id < User_Subscriptions.user_id 
+Subscriptions.subscription_id < User_Subscriptions.subs_id
+User_Subscriptions.payment_id - Payments.payment_id
+Users.user_id < Ratings.user_id
+Content.content_id < Ratings.content_id
+Content.content_id < Subscription_Access.content_id
+Subscriptions.subscription_id < Subscription_Access.subscription_id
+Users.user_id < Watch_History.user_id
+Content.content_id < Watch_History.content_id
+Users.user_id < Favorite.user_id
+People.person_id < Favorite.person_id
+Content.content_id < Favorite.content_id
+Genres.genre_id < Content_Genre.genre_id
+Content.content_id < Content_Genre.content_id
+People.person_id < Crew.person_id
+Content.content_id < Crew.content_id
