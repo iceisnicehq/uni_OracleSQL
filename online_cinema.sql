@@ -1,20 +1,3 @@
--- -- Drop dependent tables first
--- DROP TABLE Crew CASCADE CONSTRAINTS;
--- DROP TABLE Content_Genre CASCADE CONSTRAINTS;
--- DROP TABLE Favorite CASCADE CONSTRAINTS;
--- DROP TABLE Watch_History CASCADE CONSTRAINTS;
--- DROP TABLE Subscription_Access CASCADE CONSTRAINTS;
-
--- -- Drop primary tables
--- DROP TABLE Ratings CASCADE CONSTRAINTS;
--- DROP TABLE Payments CASCADE CONSTRAINTS;
--- DROP TABLE Genres CASCADE CONSTRAINTS;
--- DROP TABLE Subscriptions CASCADE CONSTRAINTS;
--- DROP TABLE People CASCADE CONSTRAINTS;
--- DROP TABLE Content CASCADE CONSTRAINTS;
--- DROP TABLE Users CASCADE CONSTRAINTS;
-
-
 -- 1. Subscriptions
 CREATE TABLE Subscriptions (
     subscription_id NUMBER GENERATED ALWAYS AS IDENTITY,
@@ -77,9 +60,9 @@ CREATE TABLE Users (
 -- 5. Payments
 CREATE TABLE Payments (
     payment_id NUMBER GENERATED ALWAYS AS IDENTITY,
-    pay_date TIMESTAMP(0) NOT NULL,
+    payment_date TIMESTAMP(0) NOT NULL,
     amount NUMBER NOT NULL,
-    method VARCHAR2(100) NOT NULL,
+    payment_method VARCHAR2(100) NOT NULL,
     user_id NUMBER NOT NULL,
     subs_id NUMBER NOT NULL,
     status VARCHAR2(30) NOT NULL,
@@ -109,8 +92,8 @@ CREATE TABLE Ratings (
     user_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
     rating_date TIMESTAMP(0) NOT NULL,
-    rating NUMBER NOT NULL CHECK (rating BETWEEN 0 AND 10)
-    comment VARCHAR2(512),
+    rating NUMBER NOT NULL CHECK (rating BETWEEN 0 AND 10),
+    rating_comment VARCHAR2(512),
     CONSTRAINT pk_ratings PRIMARY KEY (rating_id),
     CONSTRAINT fk_ratings_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
     CONSTRAINT fk_ratings_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
