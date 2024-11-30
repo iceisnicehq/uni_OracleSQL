@@ -1,4 +1,3 @@
--- 1. Subscriptions
 CREATE TABLE Subscriptions (
     subscription_id NUMBER GENERATED ALWAYS AS IDENTITY,
     subs_name VARCHAR2(100) NOT NULL,
@@ -6,7 +5,6 @@ CREATE TABLE Subscriptions (
     CONSTRAINT pk_subscriptions PRIMARY KEY (subscription_id)
 );
 
--- 2. Content
 CREATE TABLE Content (
     content_id NUMBER GENERATED ALWAYS AS IDENTITY,
     title VARCHAR2(512) NOT NULL,
@@ -20,7 +18,6 @@ CREATE TABLE Content (
     CONSTRAINT pk_content PRIMARY KEY (content_id)
 );
 
--- 3. Genres
 CREATE TABLE Genres (
     genre_id NUMBER GENERATED ALWAYS AS IDENTITY,
     name VARCHAR2(100) NOT NULL,
@@ -28,7 +25,6 @@ CREATE TABLE Genres (
     CONSTRAINT pk_genres PRIMARY KEY (genre_id)
 );
 
--- 4. People
 CREATE TABLE People (
     person_id NUMBER GENERATED ALWAYS AS IDENTITY,
     first_name VARCHAR2(100) NOT NULL,
@@ -38,7 +34,7 @@ CREATE TABLE People (
     birth_date DATE NOT NULL,
     CONSTRAINT pk_people PRIMARY KEY (person_id)
 );
--- 7. Users
+
 CREATE TABLE Users (
     user_id NUMBER GENERATED ALWAYS AS IDENTITY,
     username VARCHAR2(100) NOT NULL,
@@ -57,7 +53,7 @@ CREATE TABLE Users (
     CONSTRAINT pk_users PRIMARY KEY (user_id),
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id)
 );
--- 5. Payments
+
 CREATE TABLE Payments (
     payment_id NUMBER GENERATED ALWAYS AS IDENTITY,
     payment_date TIMESTAMP(0) NOT NULL,
@@ -71,7 +67,6 @@ CREATE TABLE Payments (
     CONSTRAINT fk_payments_subscription FOREIGN KEY (subs_id) REFERENCES Subscriptions(subscription_id)
 );
 
--- 6. User_Subscriptions
 CREATE TABLE User_Subscriptions (
     user_subscription_id NUMBER GENERATED ALWAYS AS IDENTITY,
     user_id NUMBER NOT NULL,
@@ -86,7 +81,6 @@ CREATE TABLE User_Subscriptions (
     CONSTRAINT fk_user_subscriptions_payment FOREIGN KEY (payment_id) REFERENCES Payments(payment_id)
 );
 
--- 8. Ratings
 CREATE TABLE Ratings (
     rating_id NUMBER GENERATED ALWAYS AS IDENTITY,
     user_id NUMBER NOT NULL,
@@ -99,7 +93,6 @@ CREATE TABLE Ratings (
     CONSTRAINT fk_ratings_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
 );
 
--- 9. Subscription_Access
 CREATE TABLE Subscription_Access (
     access_id NUMBER GENERATED ALWAYS AS IDENTITY,
     content_id NUMBER,
@@ -109,7 +102,6 @@ CREATE TABLE Subscription_Access (
     CONSTRAINT fk_access_subscription FOREIGN KEY (subscription_id) REFERENCES Subscriptions(subscription_id)
 );
 
--- 10. Watch_History
 CREATE TABLE Watch_History (
     history_id NUMBER GENERATED ALWAYS AS IDENTITY, 
     user_id NUMBER NOT NULL,
@@ -121,7 +113,6 @@ CREATE TABLE Watch_History (
     CONSTRAINT fk_watch_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
 );
 
--- 11. Favorite
 CREATE TABLE Favorite (
     favorite_id NUMBER GENERATED ALWAYS AS IDENTITY, 
     user_id NUMBER NOT NULL,
@@ -133,7 +124,6 @@ CREATE TABLE Favorite (
     CONSTRAINT fk_favorite_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
 );
 
--- 12. Content_Genre
 CREATE TABLE Content_Genre (
     genre_assignment_id NUMBER GENERATED ALWAYS AS IDENTITY, 
     genre_id NUMBER NOT NULL,
@@ -143,7 +133,6 @@ CREATE TABLE Content_Genre (
     CONSTRAINT fk_genre_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
 );
 
--- 13. Crew
 CREATE TABLE Crew (
     crew_id NUMBER GENERATED ALWAYS AS IDENTITY, 
     person_id NUMBER NOT NULL,
