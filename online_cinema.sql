@@ -10,6 +10,7 @@ CREATE TABLE Content (
     title VARCHAR2(512) NOT NULL,
     synopsis VARCHAR2(512),
     release_date DATE NOT NULL,
+    duration NUMBER NOT NULL,
     country VARCHAR2(100) NOT NULL,
     type VARCHAR2(100) NOT NULL,
     age_rating VARCHAR2(3) NOT NULL,
