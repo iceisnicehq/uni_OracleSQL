@@ -52,7 +52,7 @@ CREATE TABLE Users (
     bio VARCHAR2(512),
     vk_link VARCHAR2(100),
     interests VARCHAR2(512),
-    sex VARCHAR2(1),
+    sex VARCHAR2(3),
     ref_user_id NUMBER,
     CONSTRAINT pk_users PRIMARY KEY (user_id),
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id)
