@@ -138,7 +138,7 @@ CREATE TABLE Crew (
     crew_id NUMBER GENERATED ALWAYS AS IDENTITY, 
     person_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
-    role VARCHAR2(50) NOT NULL,
+    role VARCHAR2(100) NOT NULL,
     CONSTRAINT pk_crew PRIMARY KEY (crew_id),
     CONSTRAINT fk_crew_person FOREIGN KEY (person_id) REFERENCES People(person_id),
     CONSTRAINT fk_crew_content FOREIGN KEY (content_id) REFERENCES Content(content_id)
