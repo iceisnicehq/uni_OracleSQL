@@ -109,7 +109,7 @@ CREATE TABLE Ratings (
     user_id NUMBER NOT NULL,
     content_id NUMBER NOT NULL,
     rating_date TIMESTAMP(0) NOT NULL,
-    rating NUMBER NOT NULL,
+    rating NUMBER NOT NULL CHECK (rating BETWEEN 0 AND 10)
     comment VARCHAR2(512),
     CONSTRAINT pk_ratings PRIMARY KEY (rating_id),
     CONSTRAINT fk_ratings_user FOREIGN KEY (user_id) REFERENCES Users(user_id),
