@@ -73,7 +73,7 @@ CREATE TABLE Payments (
 
 -- 6. User_Subscriptions
 CREATE TABLE User_Subscriptions (
-    user_subscription_id NUMBER NOT NULL,
+    user_subscription_id NUMBER GENERATED ALWAYS AS IDENTITY,
     user_id NUMBER NOT NULL,
     subs_id NUMBER NOT NULL, 
     payment_id NUMBER NOT NULL, 
