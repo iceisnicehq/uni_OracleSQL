@@ -33,6 +33,7 @@ CREATE TABLE People (
     height NUMBER,
     birth_country VARCHAR2(100),
     birth_date DATE NOT NULL,
+    death_date DATE,
     CONSTRAINT pk_people PRIMARY KEY (person_id)
 );
 
