@@ -65,7 +65,7 @@ CREATE TABLE Users (
     CONSTRAINT fk_users_ref_user FOREIGN KEY (ref_user_id) REFERENCES Users(user_id),
     CONSTRAINT uq_users_username UNIQUE (username),
     CONSTRAINT uq_users_email UNIQUE (email),
-    CONSTRAINT chk_users_sex CHECK (sex IN ('мужской', 'женский') OR sex IS NULL),
+    CONSTRAINT chk_users_sex CHECK (sex IN ('муж', 'жен') OR sex IS NULL),
     CONSTRAINT chk_users_birth_date CHECK (birth_date >= TO_DATE('1890-01-01', 'YYYY-MM-DD'))
 );
 
