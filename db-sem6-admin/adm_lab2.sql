@@ -4,26 +4,18 @@
 дата и время начала выполнения процедуры, входные параметры процедуры, кол-во вставленных записей, дата и время окончания выполнения процедуры, флаг успешного выполнения процедуры).
 */
 
--- Drop the Payment_rent table if it already exists
-DROP TABLE Payment_rent;
+DROP TABLE fgup_payer;
 
--- Create the Payment_rent table with the same structure as test_operation
-CREATE TABLE Payment_rent AS
-SELECT *
-FROM test_operation
-WHERE 1 = 0; -- This ensures the table is created with the same structure but no data
+CREATE TABLE fgup_payer AS
+    SELECT * FROM sh.test_operation
+    WHERE 1 = 0;
 
--- Drop the procedure if it already exists
 DROP PROCEDURE fgup;
+DROP TABLE logger;
 
--- Drop the log table if it already exists
-DROP TABLE log;
+DROP SEQUENCE log_proc_seq;
 
--- Drop the sequence if it already exists
-DROP SEQUENCE loggin_proc_seq;
-
--- Create the log table
-CREATE TABLE log (
+CREATE TABLE logger (
     ID NUMBER PRIMARY KEY,
     DATE_PROC_START DATE NOT NULL,
     DATE_FROM DATE NOT NULL,
@@ -33,51 +25,35 @@ CREATE TABLE log (
     FLAG NUMBER NOT NULL
 );
 
--- Create the sequence for log table IDs
-CREATE SEQUENCE loggin_proc_seq
-START WITH 1
-INCREMENT BY 1
-NOMAXVALUE;
+CREATE SEQUENCE log_proc_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOMAXVALUE;
 
--- Create the procedure
 CREATE OR REPLACE PROCEDURE fgup(date1 IN DATE, date2 IN DATE) IS
-    -- Define a cursor to fetch the required data
     CURSOR cur_operations IS
-        SELECT *
-        FROM test_operation
-        WHERE data_op BETWEEN date1 AND date2
-          AND REGEXP_LIKE(descr, 'ФГУП', 'i');
-
-    -- Variable to count the number of inserted rows
+        SELECT * FROM sh.test_operation
+        WHERE data_op BETWEEN date1 AND date2 AND REGEXP_LIKE(upper(descr), 'ФГУП');
     v_cnt NUMBER := 0;
-
-    -- Variable to store the start time of the procedure
     v_st_pr DATE := SYSDATE;
 BEGIN
-    -- Delete existing data from Payment_rent
-    DELETE FROM Payment_rent;
-
-    -- Process each row individually using a FOR loop
+    DELETE FROM fgup_payer;
     FOR rec IN cur_operations LOOP
-        -- Insert the current row into Payment_rent
-        INSERT INTO Payment_rent VALUES rec;
-
-        -- Increment the row counter
+        INSERT INTO fgup_payer VALUES rec;
         v_cnt := v_cnt + 1;
     END LOOP;
 
-    -- Log the successful execution
-    INSERT INTO log (ID, DATE_PROC_START, DATE_FROM, DATE_TO, COUNT_INSERT, DATE_PROC_END, FLAG)
-    VALUES (loggin_proc_seq.NEXTVAL, v_st_pr, date1, date2, v_cnt, SYSDATE, 1);
-
-    COMMIT;
-
+    INSERT INTO logger (ID, DATE_PROC_START, DATE_FROM, DATE_TO, COUNT_INSERT, DATE_PROC_END, FLAG)
+             VALUES (log_proc_seq.NEXTVAL, v_st_pr, date1, date2, v_cnt, SYSDATE, 1);
 EXCEPTION
     WHEN OTHERS THEN
-        -- Log the error
-        INSERT INTO log (ID, DATE_PROC_START, DATE_FROM, DATE_TO, COUNT_INSERT, DATE_PROC_END, FLAG)
-        VALUES (loggin_proc_seq.NEXTVAL, v_st_pr, date1, date2, v_cnt, SYSDATE, 0);
-
-        COMMIT;
-        RAISE; -- Re-raise the exception to notify the caller
+        INSERT INTO logger (ID, DATE_PROC_START, DATE_FROM, DATE_TO, COUNT_INSERT, DATE_PROC_END, FLAG)
+                 VALUES (log_proc_seq.NEXTVAL, v_st_pr, date1, date2, v_cnt, SYSDATE, 0);
 END;
+
+begin 
+    fgup(to_date('01.01.2001'),to_date('01.01.2010'));
+end;
+
+select * from logger;
+SELECT * FROM fgup_payer;
