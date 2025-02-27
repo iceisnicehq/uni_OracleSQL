@@ -4,6 +4,42 @@
 дата и время начала выполнения процедуры, входные параметры процедуры, кол-во вставленных записей, дата и время окончания выполнения процедуры, флаг успешного выполнения процедуры).
 */
 
+-- Drop the Payment_rent table if it already exists
+DROP TABLE Payment_rent;
+
+-- Create the Payment_rent table with the same structure as test_operation
+CREATE TABLE Payment_rent AS
+SELECT *
+FROM test_operation
+WHERE 1 = 0; -- This ensures the table is created with the same structure but no data
+
+-- Drop the procedure if it already exists
+DROP PROCEDURE fgup;
+
+-- Drop the log table if it already exists
+DROP TABLE log;
+
+-- Drop the sequence if it already exists
+DROP SEQUENCE loggin_proc_seq;
+
+-- Create the log table
+CREATE TABLE log (
+    ID NUMBER PRIMARY KEY,
+    DATE_PROC_START DATE NOT NULL,
+    DATE_FROM DATE NOT NULL,
+    DATE_TO DATE NOT NULL,
+    COUNT_INSERT NUMBER NOT NULL,
+    DATE_PROC_END DATE NOT NULL,
+    FLAG NUMBER NOT NULL
+);
+
+-- Create the sequence for log table IDs
+CREATE SEQUENCE loggin_proc_seq
+START WITH 1
+INCREMENT BY 1
+NOMAXVALUE;
+
+-- Create the procedure
 CREATE OR REPLACE PROCEDURE fgup(date1 IN DATE, date2 IN DATE) IS
     -- Define a cursor to fetch the required data
     CURSOR cur_operations IS
