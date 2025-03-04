@@ -4,7 +4,7 @@ CREATE OR REPLACE PACKAGE FlightReservationPackage AS
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
-    ) RETURN INTEGER;
+    ) RETURN NUMBER;
 
     -- Объявление функции GetPassengerReservations
     FUNCTION GetPassengerReservations(
@@ -27,9 +27,9 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
-    ) RETURN INTEGER IS
-        v_total_seats INTEGER;
-        v_booked_seats INTEGER;
+    ) RETURN NUMBER IS
+        v_total_seats NUMBER;
+        v_booked_seats NUMBER;
     BEGIN
         -- Получаем общее количество мест для указанного класса на самолете
         SELECT COUNT(*)
@@ -97,10 +97,10 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
     ) IS
-        v_available_tickets INTEGER;
+        v_available_tickets NUMBER;
         v_book_ref bookings.book_ref%TYPE;
         v_ticket_no tickets.ticket_no%TYPE;
-        v_passenger_exists INTEGER;
+        v_passenger_exists NUMBER;
     BEGIN
         -- Проверяем, что все пассажиры существуют в системе
         FOR i IN 1..p_passenger_ids.COUNT LOOP
