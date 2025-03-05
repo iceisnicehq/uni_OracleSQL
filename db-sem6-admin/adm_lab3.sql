@@ -1,76 +1,63 @@
----------------------------------TRASH
+CREATE OR REPLACE TYPE passenger_id_list AS VARRAY(10) OF VARCHAR(20);
 
 CREATE OR REPLACE PACKAGE FlightReservationPackage AS
-    -- Function to check flight availability
     FUNCTION IsFlightAvailable(
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
     ) RETURN NUMBER;
 
-    -- Function to get passenger reservations
     FUNCTION GetPassengerReservations(
         p_passenger_id IN tickets.passenger_id%TYPE
     ) RETURN SYS_REFCURSOR;
 
-    -- Procedure to make a reservation
     PROCEDURE MakeReservation(
-        p_passenger_ids IN passenger_id_list, -- Используем VARRAY
+        p_passenger_ids IN passenger_id_list, 
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
     );
 
-    -- Function to calculate total revenue for a flight
     FUNCTION CalculateTotalRevenue(
         p_flight_id IN flights.flight_id%TYPE
     ) RETURN NUMBER;
 END FlightReservationPackage;
 
-CREATE OR REPLACE TYPE passenger_id_list AS VARRAY(10) OF VARCHAR(20);
---SELECT * FROM TICKETS;
---DESC TICKETS;
--- File: create_package_body.sql
 CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
-    -- Implement IsFlightAvailable
     FUNCTION IsFlightAvailable(
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
-    ) RETURN NUMBER IS
-        v_total_seats NUMBER;
-        v_booked_seats NUMBER;
-    BEGIN
-        -- Get total seats for the flight and class
+    ) RETURN NUMBER 
+        IS
+            v_total_seats NUMBER;
+            v_booked_seats NUMBER;
+        BEGIN
         SELECT COUNT(*)
-        INTO v_total_seats
-        FROM seats s
-        JOIN flights f ON s.aircraft_code = f.aircraft_code
-        WHERE f.flight_id = p_flight_id
-          AND s.fare_conditions = p_fare_conditions;
+            INTO v_total_seats
+            FROM seats s
+            JOIN flights f ON s.aircraft_code = f.aircraft_code
+            WHERE f.flight_id = p_flight_id
+                AND s.fare_conditions = p_fare_conditions;
 
-        -- Get booked seats for the flight and class
         SELECT COUNT(*)
-        INTO v_booked_seats
-        FROM ticket_flights tf
-        JOIN flights f ON tf.flight_id = f.flight_id
-        WHERE f.flight_id = p_flight_id
-          AND tf.fare_conditions = p_fare_conditions
-          AND TRUNC(f.scheduled_departure) = TRUNC(p_flight_date);
-
-        -- Return available seats
+            INTO v_booked_seats
+            FROM ticket_flights tf
+            JOIN flights f ON tf.flight_id = f.flight_id
+            WHERE f.flight_id = p_flight_id
+                AND tf.fare_conditions = p_fare_conditions
+                AND TRUNC(f.scheduled_departure) = TRUNC(p_flight_date);
         RETURN v_total_seats - v_booked_seats;
     EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 0;
-        WHEN OTHERS THEN
-            RAISE;
+        WHEN NO_DATA_FOUND THEN RETURN 0;
+        WHEN OTHERS THEN RAISE;
     END IsFlightAvailable;
 
-    -- Implement GetPassengerReservations
     FUNCTION GetPassengerReservations(
         p_passenger_id IN tickets.passenger_id%TYPE
-    ) RETURN SYS_REFCURSOR IS
+    ) RETURN 
+    SYS_REFCURSOR 
+    IS
         v_cursor SYS_REFCURSOR;
     BEGIN
         OPEN v_cursor FOR
@@ -86,20 +73,18 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
                 f.arrival_airport,
                 f.status
             FROM tickets t
-            JOIN ticket_flights tf ON t.ticket_no = tf.ticket_no
-            JOIN flights f ON tf.flight_id = f.flight_id
+                JOIN ticket_flights tf ON t.ticket_no = tf.ticket_no
+                JOIN flights f ON tf.flight_id = f.flight_id
             WHERE t.passenger_id = p_passenger_id;
         RETURN v_cursor;
     EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RAISE_APPLICATION_ERROR(-20001, 'No reservations found for the passenger.');
-        WHEN OTHERS THEN
-            RAISE;
+        WHEN NO_DATA_FOUND THEN RAISE_APPLICATION_ERROR(-20001, 'У этого пассажира нет бронирований.');
+        WHEN OTHERS THEN RAISE;
     END GetPassengerReservations;
-
-   -- Implement MakeReservation
+    
+    
     PROCEDURE MakeReservation(
-        p_passenger_ids IN passenger_id_list, -- Используем VARRAY
+        p_passenger_ids IN passenger_id_list,
         p_flight_id IN flights.flight_id%TYPE,
         p_fare_conditions IN ticket_flights.fare_conditions%TYPE,
         p_flight_date IN DATE
@@ -110,8 +95,9 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
         v_passenger_exists NUMBER;
         v_total_amount bookings.total_amount%TYPE;
         v_ticket_amount ticket_flights.amount%TYPE;
+        v_passenger_name tickets.passenger_name%TYPE;
+        v_contact_data tickets.contact_data%TYPE;
     BEGIN
-        -- Validate passengers
         FOR i IN 1..p_passenger_ids.COUNT LOOP
             SELECT COUNT(*)
             INTO v_passenger_exists
@@ -119,77 +105,58 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
             WHERE passenger_id = p_passenger_ids(i);
 
             IF v_passenger_exists = 0 THEN
-                RAISE_APPLICATION_ERROR(-20002, 'Passenger ' || p_passenger_ids(i) || ' does not exist.');
+                RAISE_APPLICATION_ERROR(-20002, 'Пассажир ' || p_passenger_ids(i) || ' не существует.');
             END IF;
         END LOOP;
-
-        -- Check ticket availability
         v_available_tickets := IsFlightAvailable(p_flight_id, p_fare_conditions, p_flight_date);
         IF v_available_tickets < p_passenger_ids.COUNT THEN
-            RAISE_APPLICATION_ERROR(-20003, 'Not enough tickets.');
+            RAISE_APPLICATION_ERROR(-20003, 'Билетов меньше, чем пассажиров.');
         END IF;
-
-        -- Generate booking reference
         SELECT DBMS_RANDOM.STRING('X', 6) INTO v_book_ref FROM dual;
-
-        -- Generate random total amount
         SELECT TRUNC(DBMS_RANDOM.VALUE(1000, 10000)) INTO v_total_amount FROM dual;
-
-        -- Insert booking
         INSERT INTO bookings (book_ref, book_date, total_amount)
         VALUES (v_book_ref, SYSDATE, v_total_amount);
-
-        -- Generate tickets
         FOR i IN 1..p_passenger_ids.COUNT LOOP
-            -- Generate ticket number
             SELECT DBMS_RANDOM.STRING('X', 6) INTO v_ticket_no FROM dual;
-
-            -- Generate random ticket amount
             SELECT TRUNC(DBMS_RANDOM.VALUE(1000, 10000)) INTO v_ticket_amount FROM dual;
-
-            -- Insert ticket
-            INSERT INTO tickets (ticket_no, book_ref, passenger_id, passenger_name, contact_data)
-            SELECT v_ticket_no, v_book_ref, passenger_id, passenger_name, contact_data
+            SELECT passenger_name, contact_data
+            INTO v_passenger_name, v_contact_data
             FROM tickets
             WHERE passenger_id = p_passenger_ids(i) AND ROWNUM = 1;
-
-            -- Link ticket to flight
+            INSERT INTO tickets (ticket_no, book_ref, passenger_id, passenger_name, contact_data)
+            VALUES (v_ticket_no, v_book_ref, p_passenger_ids(i), v_passenger_name, v_contact_data);
             INSERT INTO ticket_flights (ticket_no, flight_id, fare_conditions, amount)
             VALUES (v_ticket_no, p_flight_id, p_fare_conditions, v_ticket_amount);
+            DBMS_OUTPUT.PUT_LINE('Добавлено бронирование ' || v_book_ref || 'и билет ' || v_ticket_no);
         END LOOP;
 
-        COMMIT;
     EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE_APPLICATION_ERROR(-20004, 'Error: ' || SQLERRM);
+        WHEN OTHERS THEN RAISE;
     END MakeReservation;
-
-    -- Implement CalculateTotalRevenue
+    
     FUNCTION CalculateTotalRevenue(
         p_flight_id IN flights.flight_id%TYPE
-    ) RETURN NUMBER IS
+    ) RETURN NUMBER 
+    IS
         v_total_revenue NUMBER := 0;
     BEGIN
-        -- Sum the total revenue for the flight
-        SELECT NVL(SUM(b.total_amount), 0)
-        INTO v_total_revenue
-        FROM ticket_flights tf
-        JOIN tickets t ON tf.ticket_no = t.ticket_no
-        JOIN bookings b ON t.book_ref = b.book_ref
-        WHERE flight_id = p_flight_id;
-
+        SELECT SUM(b.total_amount)
+            INTO v_total_revenue
+            FROM ticket_flights tf
+                JOIN tickets t ON tf.ticket_no = t.ticket_no
+                JOIN bookings b ON t.book_ref = b.book_ref
+            WHERE flight_id = p_flight_id;
         RETURN v_total_revenue;
     EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 0;
-        WHEN OTHERS THEN
-            RAISE;
+        WHEN NO_DATA_FOUND THEN RETURN 0;
+        WHEN OTHERS THEN RAISE;
     END CalculateTotalRevenue;
 END FlightReservationPackage;
 
--- FUNC 1 
-SELECT FlightReservationPackage.IsFlightAvailable(2055, 'Economy', '16-JUL-17') FROM DUAL
+SELECT SYSDATE FROM DUAL;
+
+-- 1
+SELECT FlightReservationPackage.IsFlightAvailable(2055, 'Economy', '16.07.17') FROM DUAL
 
 SELECT *
 FROM seats s
@@ -201,17 +168,15 @@ SELECT *
 FROM ticket_flights tf
 JOIN flights f ON tf.flight_id = f.flight_id
 JOIN boarding_passes b 
-  ON tf.ticket_no = b.ticket_no      -- Ключевое условие!
-  AND tf.flight_id = b.flight_id     -- Дополнительная точность
-WHERE f.flight_id = 2055
+  ON tf.ticket_no = b.ticket_no        AND tf.flight_id = b.flight_id     WHERE f.flight_id = 2055
   AND tf.fare_conditions = 'Economy'
-  AND TRUNC(f.scheduled_departure) = TO_DATE('16-JUL-17', 'DD-MON-YY');
+  AND TRUNC(f.scheduled_departure) = TO_DATE('16.07.17', 'DD.MM.YY');
 
--- FUNC 2 
+-- 2
 SELECT * FROM tickets
 SELECT FlightReservationPackage.GetPassengerReservations('6615 976589') FROM DUAL;
 
--- PROC 3
+-- 3 
 SELECT * 
 FROM ticket_flights tf
 JOIN tickets t ON t.ticket_no = tf.ticket_no
@@ -219,19 +184,18 @@ JOIN flights f ON tf.flight_id = f.flight_id
 WHERE f.flight_id = 30625;
 
 DECLARE
-    v_passenger_ids passenger_id_list := passenger_id_list('3952 666242', '9933 118369');
+    v_passenger_ids passenger_id_list := passenger_id_list('6615 976589', '2290 450397');
 BEGIN
     FlightReservationPackage.MakeReservation(
         v_passenger_ids,
         30625,
         'Economy',
-        TO_DATE('16-JUL-17', 'DD-MON-YY')
+        TO_DATE('16.07.17', 'DD.MM.YY')
     );
-    DBMS_OUTPUT.PUT_LINE('Reservation successful.');
 EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
 END;
-
--- FUNC 4 (additional)
+SELECT * FROM tickets WHERE ticket_no = 'SHK989';
+--4
 SELECT FlightReservationPackage.CalculateTotalRevenue(2055) FROM DUAL;
