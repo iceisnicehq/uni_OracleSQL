@@ -33,13 +33,16 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
             v_total_seats NUMBER;
             v_booked_seats NUMBER;
         BEGIN
-        SELECT COUNT(*)
+            SELECT COUNT(*)
             INTO v_total_seats
             FROM seats s
             JOIN flights f ON s.aircraft_code = f.aircraft_code
             WHERE f.flight_id = p_flight_id
                 AND s.fare_conditions = p_fare_conditions;
-
+        IF v_total_seats = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('Такого рейса не сущетсвует');
+            RETURN -1;
+        END IF;
         SELECT COUNT(*)
             INTO v_booked_seats
             FROM ticket_flights tf
@@ -48,9 +51,6 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
                 AND tf.fare_conditions = p_fare_conditions
                 AND TRUNC(f.scheduled_departure) = TRUNC(p_flight_date);
         RETURN v_total_seats - v_booked_seats;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN RETURN 0;
-        WHEN OTHERS THEN RAISE;
     END IsFlightAvailable;
 
     FUNCTION GetPassengerReservations(
@@ -127,7 +127,7 @@ CREATE OR REPLACE PACKAGE BODY FlightReservationPackage AS
             VALUES (v_ticket_no, v_book_ref, p_passenger_ids(i), v_passenger_name, v_contact_data);
             INSERT INTO ticket_flights (ticket_no, flight_id, fare_conditions, amount)
             VALUES (v_ticket_no, p_flight_id, p_fare_conditions, v_ticket_amount);
-            DBMS_OUTPUT.PUT_LINE('Добавлено бронирование ' || v_book_ref || 'и билет ' || v_ticket_no);
+            DBMS_OUTPUT.PUT_LINE('Добавлено бронирование ' || v_book_ref || ' и билет ' || v_ticket_no);
         END LOOP;
 
     EXCEPTION
@@ -155,9 +155,14 @@ END FlightReservationPackage;
 
 SELECT SYSDATE FROM DUAL;
 
+SET SERVEROUTPUT ON
 -- 1
-SELECT FlightReservationPackage.IsFlightAvailable(2055, 'Economy', '16.07.17') FROM DUAL
+SELECT FlightReservationPackage.IsFlightAvailable(2055, 'Economy', '16.07.17') FROM DUAL;
 
+SELECT FlightReservationPackage.IsFlightAvailable(22323055, 'Economy', '16.07.17') FROM DUAL;
+BEGIN
+DBMS_OUTPUT.PUT_LINE('iii');
+END;
 SELECT *
 FROM seats s
 JOIN flights f ON s.aircraft_code = f.aircraft_code
@@ -196,6 +201,6 @@ EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
 END;
-SELECT * FROM tickets WHERE ticket_no = 'SHK989';
+SELECT * FROM tickets WHERE ticket_no = '4YVBD1';
 --4
 SELECT FlightReservationPackage.CalculateTotalRevenue(2055) FROM DUAL;
