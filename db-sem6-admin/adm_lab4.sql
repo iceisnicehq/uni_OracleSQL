@@ -1,4 +1,3 @@
--- Создание таблицы для аудита создания/удаления таблиц
 CREATE TABLE table_audit (
     audit_id     NUMBER PRIMARY KEY,
     event_type   VARCHAR2(10),
@@ -7,7 +6,6 @@ CREATE TABLE table_audit (
     username     VARCHAR2(30)
 );
 
--- Создание таблицы для записи нарушений рабочего времени
 CREATE TABLE violation_attempts (
     violation_id NUMBER PRIMARY KEY,
     operation    VARCHAR2(10),
@@ -17,11 +15,9 @@ CREATE TABLE violation_attempts (
     error_msg    VARCHAR2(100)
 );
 
--- Создание последовательностей для первичных ключей
 CREATE SEQUENCE seq_audit START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_violation START WITH 1 INCREMENT BY 1;
 
--- Триггер для проверки времени и записи событий DDL
 CREATE OR REPLACE TRIGGER ddl_audit_trigger
 BEFORE CREATE OR DROP ON SCHEMA
 DECLARE
@@ -32,33 +28,27 @@ DECLARE
     v_table_name VARCHAR2(30);
     v_error_msg  VARCHAR2(100);
 BEGIN
-    -- Определение типа события (CREATE или DROP)
     v_event_type := ORA_SYSEVENT;
     v_table_name := ORA_DICT_OBJ_NAME;
 
-    -- Проверка дня недели и времени
     v_day := TO_CHAR(SYSDATE, 'DY');
     v_time := TO_CHAR(SYSDATE, 'HH24:MI');
 
-    -- Если событие происходит в рабочее время (Пн-Пт 09:00-18:00)
-    IF (v_day IN ('MON', 'TUE', 'WED', 'THU', 'FRI') 
+    IF (v_day IN ('ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ') 
         AND v_time BETWEEN '09:00' AND '18:00') THEN
         
-        -- Запись о нарушении
         INSERT INTO violation_attempts VALUES (
             seq_violation.NEXTVAL,
             v_event_type,
             v_table_name,
             SYSTIMESTAMP,
             USER,
-            'Операция запрещена в рабочее время'
+            'Операция запрещена в рабочее время (понедельник-пятница с 09.00 до 18.00)'
         );
         COMMIT;
 
-        -- Вызов исключения
-        RAISE_APPLICATION_ERROR(-20001, 'Создание/удаление таблиц запрещено с 09:00 до 18:00 в рабочие дни.');
+        RAISE_APPLICATION_ERROR(-20001, 'Создание или удаление таблиц запрещено в рабочее время (понедельник-пятница с 09.00 до 18.00)');
     ELSE
-        -- Запись в аудит, если время не рабочее
         INSERT INTO table_audit VALUES (
             seq_audit.NEXTVAL,
             v_event_type,
@@ -69,4 +59,53 @@ BEGIN
         COMMIT;
     END IF;
 END;
-/
+
+
+
+-- Create a test table
+CREATE TABLE test_table_allowed (
+    id NUMBER,
+    name VARCHAR2(50)
+);
+
+-- Query the table_audit table to verify the event was logged
+SELECT * FROM table_audit;
+
+-- Attempt to create a test table during restricted hours
+CREATE TABLE test_table_blocked (
+    id NUMBER,
+    name VARCHAR2(50)
+);
+
+-- Query the violation_attempts table to verify the event was logged
+SELECT * FROM violation_attempts;
+
+-- Drop the test table created earlier
+DROP TABLE test_table_allowed;
+
+-- Query the table_audit table to verify the event was logged
+SELECT * FROM table_audit;
+
+-- Attempt to drop a test table during restricted hours
+DROP TABLE test_table_blocked;
+
+-- Query the violation_attempts table to verify the event was logged
+SELECT * FROM violation_attempts;
+
+-- Check the current value of the sequences
+SELECT seq_audit.CURRVAL FROM dual;
+SELECT seq_violation.CURRVAL FROM dual;
+
+-- Drop the test tables (if they exist)
+DROP TABLE test_table_allowed;
+DROP TABLE test_table_blocked;
+
+-- Clear the audit and violation tables (optional)
+DELETE FROM table_audit;
+DELETE FROM violation_attempts;
+
+-- Reset the sequences (optional)
+DROP SEQUENCE seq_audit;
+DROP SEQUENCE seq_violation;
+CREATE SEQUENCE seq_audit START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_violation START WITH 1 INCREMENT BY 1;
