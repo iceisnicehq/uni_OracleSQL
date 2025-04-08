@@ -20,7 +20,7 @@
 sqlplus sys as sysdba@PDB
     
 -- 2. 
-SELECT file_name, tablespace_name, bytes/1024/1024 "SIZE_MB" FROM dba_data_files;
+SELECT * FROM dba_data_files;
 
 -- Посмотри где находятся файлы .dbf? У тебя на компе как в примере
 -- 3. 
@@ -36,7 +36,6 @@ SELECT s.sid, s.serial#, q.sql_text
 
 -- 5. Я делал так sqlplus sys/password@localhost:1521/XEPDB1 as sysdba
 sqlplus sys as sysdba
-Password: ???
   
 -- 6.
 CREATE USER C##USER1 IDENTIFIED BY password;
@@ -51,8 +50,8 @@ GRANT CREATE SESSION TO C##my_common CONTAINER = ALL;
 GRANT C##my_common TO C##USER1 CONTAINER = ALL;
 
 -- 10.
-Username: USER1
+Username: C##USER1
 Password: password
-Hostname: ???
-Port: ???
-Service name: XEPDB1
+Hostname: local
+Port: 1521
+Service name: XE
