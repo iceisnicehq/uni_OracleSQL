@@ -17,8 +17,8 @@
 -- 10.    Зайдите в SQLDeveloper под пользователем C##USER1.
   
 -- 1. 
-sqlplus sys@XEPDB1 as sysdba
-
+sqlplus sys as sysdba@PDB
+    
 -- 2. 
 SELECT file_name, tablespace_name, bytes/1024/1024 "SIZE_MB" FROM dba_data_files;
 
